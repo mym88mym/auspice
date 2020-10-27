@@ -180,7 +180,8 @@ const removeFiltersButton = (dispatch, filterNames, outerClassName, label) => (
     metadata: state.metadata,
     colorOptions: state.metadata.colorOptions,
     browserDimensions: state.browserDimensions.browserDimensions,
-    activeFilters: state.controls.filters
+    activeFilters: state.controls.filters,
+    filtersInFooter: state.controls.filtersInFooter
   };
 })
 class Footer extends React.Component {
@@ -204,6 +205,7 @@ class Footer extends React.Component {
     const { t } = this.props;
     const totalStateCount = this.props.totalStateCounts[filterName];
     const filterTitle = this.props.metadata.colorings[filterName] ? this.props.metadata.colorings[filterName].title : filterName;
+    const activeFilterItems = this.props.activeFilters[filterName].filter((x) => x.active).map((x) => x.value);
     return (
       <div>
         {t("Filter by {{filterTitle}}", {filterTitle: filterTitle})}
@@ -217,7 +219,7 @@ class Footer extends React.Component {
                 .map((itemName) => (
                   <SimpleFilter
                     key={itemName}
-                    active={this.props.activeFilters[filterName].indexOf(itemName) !== -1}
+                    active={activeFilterItems.indexOf(itemName) !== -1}
                     onClick={() => dispatchFilter(this.props.dispatch, this.props.activeFilters, filterName, itemName)}
                   >
                     <span>
@@ -271,14 +273,16 @@ class Footer extends React.Component {
           <div className='line'/>
           {getAcknowledgments(this.props.metadata, this.props.dispatch)}
           <div className='line'/>
-          {Object.keys(this.props.activeFilters).map((name) => {
-            return (
-              <div key={name}>
-                {this.displayFilter(name)}
-                <div className='line'/>
-              </div>
-            );
-          })}
+          {Object.keys(this.props.activeFilters)
+            .filter((name) => this.props.filtersInFooter.includes(name))
+            .map((name) => {
+              return (
+                <div key={name}>
+                  {this.displayFilter(name)}
+                  <div className='line'/>
+                </div>
+              );
+            })}
           <Flex className='finePrint'>
             {this.getUpdated()}
             {dot}
