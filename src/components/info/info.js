@@ -175,8 +175,8 @@ class Info extends React.Component {
     };
   }
 
-  addFilteredDatesButton(buttons) {
-    buttons.push(
+  makeFilteredDatesButton() {
+    return (
       <FilterBadge
         key="timefilter"
         remove={() => this.props.dispatch(changeDateFilter({newMin: this.props.absoluteDateMin, newMax: this.props.absoluteDateMax}))}
@@ -255,13 +255,15 @@ class Info extends React.Component {
     );
 
     /* part II - the filters in play (both active and inactive) */
-    const filters = [];
+    const filtersByCategory = [];
     Reflect.ownKeys(this.props.filters)
       .filter((filterName) => this.props.filters[filterName].length > 0)
       .forEach((filterName) => {
-        filters.push(...this.createFilterBadges(filterName));
+        filtersByCategory.push(this.createFilterBadges(filterName));
       });
-    if (!datesMaxed) {this.addFilteredDatesButton(filters);}
+    if (!datesMaxed) {
+      filtersByCategory.push([this.makeFilteredDatesButton()]);
+    }
 
     return (
       <Card center infocard>
@@ -273,12 +275,14 @@ class Info extends React.Component {
             {/* part 1 - the summary */}
             {showExtended ? summary : null}
             {/* part 2 - the filters */}
-            {showExtended && filters.length ? (
-              <span>
+            {showExtended && filtersByCategory.length ? (
+              <>
                 {t("Filtered to") + " "}
-                {filters.map((d) => d)}
+                {filtersByCategory.map((filters, idx) => (
+                  <Brackets first={idx===0} badges={filters}/>
+                ))}
                 {". "}
-              </span>
+              </>
             ) : null}
           </div>
         </div>
@@ -286,6 +290,22 @@ class Info extends React.Component {
     );
   }
 }
+
+const Intersect = () => (<span style={{fontSize: "2rem", padding: "0px 2px"}}>∩</span>);
+const Brackets = ({badges, first}) => (
+  <span style={{fontSize: "2rem", padding: "0px 2px"}}>
+    {first ? null : <Intersect/>}
+    {badges.length === 1 ? null : `{`}
+    {badges.map((b, i) => (
+      <>
+        {b}
+        {i!==badges.length-1 ? "," : null}
+      </>
+    ))}
+    {badges.length === 1 ? null : `}`}
+  </span>
+);
+
 
 const WithTranslation = withTranslation()(Info);
 export default WithTranslation;
